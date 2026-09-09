@@ -1,0 +1,11 @@
+{
+  "source_id": "public-state-router",
+  "source_type": "kaggle_notebook",
+  "source_url": "https://www.kaggle.com/code/kaggriculture-public-state-router-74-5-win-rate",
+  "raw_path": "evidence/raw/public-state-router/source.ipynb",
+  "raw_sha256": "10fdff92519130f3224a1e252725e374fca8c2e4abcc2add787a4106ea8d8803",
+  "extractor_version": "1.0.0",
+  "entrypoint": "base/main.py:agent",
+  "extraction_status": "verified_static",
+  "static_validation": "passed"
+}

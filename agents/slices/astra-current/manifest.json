@@ -1,0 +1,11 @@
+{
+  "source_id": "astra-current",
+  "source_type": "local_script",
+  "origin_path": "main.py",
+  "raw_path": "evidence/raw/astra-current/main.py",
+  "raw_sha256": "6bab2539cecae032868da8c4d51846a492a23ad2e978ad2532c1cf80c107cc30",
+  "extractor_version": "1.0.0",
+  "entrypoint": "base/main.py:agent",
+  "extraction_status": "verified_static",
+  "static_validation": "passed"
+}

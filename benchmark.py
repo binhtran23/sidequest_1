@@ -7,6 +7,7 @@ Examples:
 
 import argparse
 import importlib.util
+import inspect
 import json
 import statistics
 import time
@@ -15,6 +16,16 @@ from pathlib import Path
 
 from kaggle_environments import make
 from kaggle_environments.envs.kaggriculture import kaggriculture as engine
+
+
+def percentile(values, q):
+    """Linear percentile without an extra dependency."""
+    values = sorted(values)
+    if not values:
+        return 0.0
+    index = (len(values) - 1) * q
+    low, high = int(index), min(len(values) - 1, int(index) + 1)
+    return values[low] + (values[high] - values[low]) * (index - low)
 
 
 def load_agent(path, suffix=""):
@@ -38,10 +49,25 @@ def run_game(
     if parameters:
         for key, value in parameters.items():
             setattr(module, key, value)
-    other = load_agent(opponent, "them").agent if opponent.endswith(".py") else opponent
+    other_durations = []
+    if opponent.endswith(".py"):
+        other_module = load_agent(opponent, "them")
+        other_agent = other_module.agent
+        takes_config = len(inspect.signature(other_agent).parameters) > 1
+
+        def other(obs, config):
+            start = time.perf_counter()
+            try:
+                return other_agent(obs, config) if takes_config else other_agent(obs)
+            finally:
+                other_durations.append(time.perf_counter() - start)
+
+    else:
+        other = opponent
     cfg = {"seed": seed, **(configuration or {})}
     env = make("kaggriculture", configuration=cfg, debug=True)
-    durations, days, counts = [], [], Counter()
+    durations, days, counts, telemetry_events = [], [], Counter(), []
+    hires_by_day = {}
     original_plants = engine._daily_refresh_plants
     original_animals = engine._daily_refresh_animals
     original_drop = engine._drop_inventories_to_shed
@@ -126,9 +152,16 @@ def run_game(
 
     def ours(obs, config):
         current_step[0] = obs.step
+        day = int(obs.day)
+        hires_by_day[day] = max(
+            hires_by_day.get(day, 0), int(obs.farms[seat].get("hires_today", 0))
+        )
         start = time.perf_counter()
         result = module.agent(obs, config)
         durations.append(time.perf_counter() - start)
+        drain = getattr(module, "drain_telemetry", None)
+        if drain:
+            telemetry_events.extend(drain())
         assert len(result["market"]) <= config.maxMarketOrdersPerTurn
         assert len(result["hands"]) == len(obs.farms[seat]["hands"])
         if obs.hour == 0:
@@ -139,13 +172,18 @@ def run_game(
                 for tile in row
                 if isinstance(tile, dict)
             )
-            plan = module._STATE.get(seat, {})
+            plan = getattr(module, "_STATE", {}).get(seat, {})
             days.append(
                 {
                     "day": obs.day,
                     "money": farm["money"],
                     "assets": dict(assets),
                     "workers": plan.get("workers"),
+                    "urgent_skipped_selection": plan.get(
+                        "urgent_skipped_selection", 0
+                    ),
+                    "urgent_skipped_final": plan.get("urgent_skipped_final", 0),
+                    "timed_net_value": plan.get("timed_net_value"),
                     "prices": dict(obs.market["prices"]),
                     "shed": dict(obs.private["shed"]),
                 }
@@ -171,6 +209,16 @@ def run_game(
     final = env.steps[-1]
     own, their = final[seat], final[1 - seat]
     inv = own.observation.private
+    hires_by_day[int(final[seat].observation.day)] = max(
+        hires_by_day.get(int(final[seat].observation.day), 0),
+        int(final[seat].observation.farms[seat].get("hires_today", 0)),
+    )
+    multiplier = cfg.get("farmHandCostMult", 1)
+    fib = [1, 1]
+    for _ in range(22):
+        fib.append(fib[-1] + fib[-2])
+    wages = sum(sum(fib[:n]) * multiplier for n in hires_by_day.values())
+    draw = own.reward == their.reward if own.reward is not None else False
     result = {
         "seed": seed,
         "seat": seat,
@@ -182,16 +230,32 @@ def run_game(
         "win": own.reward > their.reward
         if own.reward is not None and their.reward is not None
         else False,
+        "draw": draw,
+        "points": 0.5 if draw else float(own.reward > their.reward),
+        "coin_margin": own.reward - their.reward
+        if own.reward is not None and their.reward is not None
+        else None,
+        "wages": wages,
+        "hires_by_day": hires_by_day,
         "wall_seconds": round(time.perf_counter() - start, 3),
         "max_action_ms": round(1000 * max(durations, default=0), 3),
         "mean_action_ms": round(1000 * statistics.mean(durations), 3),
+        "p95_action_ms": round(1000 * percentile(durations, 0.95), 3),
+        "opponent_max_action_ms": round(
+            1000 * max(other_durations, default=0), 3
+        ),
+        "opponent_mean_action_ms": round(
+            1000 * statistics.mean(other_durations) if other_durations else 0, 3
+        ),
         "diagnostics": dict(counts),
+        "planner_metrics": dict(getattr(module, "_METRICS", {})),
         "final_shed": dict(inv["shed"]),
         "final_carried": sum(sum(v.values()) for v in inv["inventories"]),
         "shops": list(final[0].observation.town["unlocked_shops"]),
         "days": days,
         "errors": [log for logs in env.logs for log in logs if log.get("stderr")],
         "issues": issues,
+        "telemetry_events": telemetry_events,
     }
     if replay:
         Path(replay).write_text(json.dumps(env.toJSON()))
@@ -237,7 +301,26 @@ def main():
     summary = {
         "games": len(results),
         "wins": sum(r["win"] for r in results),
+        "draws": sum(r["draw"] for r in results),
+        "points_rate": statistics.mean(r["points"] for r in results),
         "mean_coins": statistics.mean(r["our_score"] for r in results),
+        "mean_coin_margin": statistics.mean(r["coin_margin"] for r in results),
+        "mean_wages": statistics.mean(r["wages"] for r in results),
+        "dead_plants": sum(r["diagnostics"].get("dead_plants", 0) for r in results),
+        "escaped_animals": sum(
+            r["diagnostics"].get("escaped_animals", 0) for r in results
+        ),
+        "overflow_units": sum(
+            r["diagnostics"].get("overflow_units", 0) for r in results
+        ),
+        "urgent_skipped_selection": sum(
+            r.get("planner_metrics", {}).get("urgent_skipped_selection", 0)
+            for r in results
+        ),
+        "urgent_skipped_final": sum(
+            r.get("planner_metrics", {}).get("urgent_skipped_final", 0)
+            for r in results
+        ),
         "min_coins": min(r["our_score"] for r in results),
         "max_action_ms": max(r["max_action_ms"] for r in results),
     }
