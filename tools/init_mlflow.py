@@ -13,7 +13,12 @@ def main():
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     mlflow.set_tracking_uri("sqlite:///" + str(DB))
     artifact_uri = ARTIFACTS.resolve().as_uri()
-    for name in ("kaggriculture.extraction", "kaggriculture.benchmark", "kaggriculture.promotion"):
+    for name in (
+        "kaggriculture.extraction",
+        "kaggriculture.benchmark",
+        "kaggriculture.promotion",
+        "kaggriculture.top_replays",
+    ):
         if not mlflow.get_experiment_by_name(name):
             mlflow.create_experiment(name, artifact_location=artifact_uri)
         print(name)
