@@ -29,7 +29,8 @@
       "variants/tomato_off/main.py:agent",
       "variants/endgame_only/main.py:agent",
       "variants/sale_granularity_v1/main.py:agent",
-      "variants/shop_plan_probe/main.py:agent"
+      "variants/shop_plan_probe/main.py:agent",
+      "variants/fertilizer_use_v1/main.py:agent"
     ],
     "audit_report": "experiments/champion-losses-20260912/report.md",
     "base_action_replay_matches": 10785,
@@ -70,6 +71,29 @@
       "sale_granularity": "falsified: monotone loss to cap; see variants/sale_granularity_v1/README.md",
       "shop_pair_coverage": "falsified: plan 0 dominates on uncovered openings; see variants/shop_plan_probe/README.md",
       "confound_note": "Variants wrapping base/router.py must set SALE_HORIZON=3 to match root main.py; the packaging default of 2 costs 3630 coins per game on the screen panel."
+    },
+    "fertilizer_observation": {
+      "report": "experiments/fertilizer-use-20260912/report.md",
+      "season_curves": "experiments/season-curves-20260912/",
+      "snapshot_id": "top-replays-20260912T130214269217Z",
+      "finding": "champion acquires 343.8 fertilizer units a game, more than any top-5 team (287.2-332.2), and applies 67.7, fewer than any of them (113.7-199.0); 304.5 units a game are sold instead",
+      "confirmed": {
+        "variant": "variants/fertilizer_use_v1/main.py:agent",
+        "settings": {
+          "apply_on_pass": true,
+          "start_day": 18
+        },
+        "holdout": "46-0-2 over 48 games vs root main.py, both seats, +203.8 coins/game",
+        "screen": "12-0-0 over 12 games, +217 coins/game",
+        "control": "48 draws at margin 0; provable no-op",
+        "effect_size": "5.54 FERTILIZE actions a game, about 37 coins each; 0.4% of score"
+      },
+      "falsified": {
+        "fertilizer_reserve": "withholding sales starves a budgeted HIRE; 288 hand desyncs and 2,052 truncated hand actions a game, -153,202 coins",
+        "pickup_units": "walking to the shed costs more than it returns; -591 to -1,828 coins",
+        "early_application": "days 0-5 lose games outright (8-0-4); days 6-9 cost 82 coins"
+      },
+      "promotion_note": "FERTILIZE is outside the weed/water/feed substitutions AGENTS.md allows the adaptive layer; promoting needs that constraint widened deliberately"
     }
   }
 }
