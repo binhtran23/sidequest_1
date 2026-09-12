@@ -1,6 +1,6 @@
 # Experiments
 
-Committed experiment folders contain resolved input configuration, reports, and promotion registry records. Large runtime output belongs under `experiments/<id>/raw/` and is ignored. MLflow metadata and artifacts are local-only under `.local/mlflow/`.
+Experiment folders contain resolved input configuration, reports, and promotion records for local review. All `experiments/<id>/` run directories are Git-ignored, along with MLflow metadata and artifacts under `.local/mlflow/`. After reviewing a result, publish a concise explanation in the root `README.md`; do not commit generated experiment payloads.
 
 ```bash
 pip install -r requirements-dev.txt
@@ -24,9 +24,9 @@ python tools/collect_top_replays.py --competition kaggriculture --top 3 --games-
 ```
 
 The generated `experiments/top-replays-*/manifest.json`, `config.json`,
-`summary.json`, and `report.html` are compact and may be committed. Immutable
-replays live under ignored `evidence/raw/<snapshot-id>/`; derived Parquet files
-live under ignored `experiments/<snapshot-id>/raw/`. To resume without changing
+`summary.json`, and `report.html` remain local for review. Immutable replays live
+under ignored `evidence/raw/<snapshot-id>/`; derived Parquet files live under
+ignored `experiments/<snapshot-id>/raw/`. To resume without changing
 the frozen cohort, pass the printed `--snapshot-id`. Existing evidence must
 match its manifest checksum and is never downloaded or replaced on a rerun.
 

@@ -8,6 +8,7 @@ import json
 import os
 import platform
 import statistics
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -64,6 +65,7 @@ def main():
     parser.add_argument("--both-seats", action="store_true")
     parser.add_argument("--config", default="{}")
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--dependencies", nargs="*", default=[], help="Additional source/config files to fingerprint")
     args = parser.parse_args()
 
     import mlflow
@@ -86,10 +88,18 @@ def main():
         "configuration": config, "git_sha": _git_sha(),
         "python": platform.python_version(), "mlflow": importlib.metadata.version("mlflow"),
         "kaggle_environments": importlib.metadata.version("kaggle-environments"),
+        "dependency_sha256": {p: _sha256(ROOT / p) for p in sorted(args.dependencies)},
     }
     _write_json(output / "config.resolved.json", resolved)
     games = []
     with mlflow.start_run(experiment_id=experiment_id, run_name=args.experiment_id) as parent:
+        sources = raw / "sources"
+        for source in [args.candidate, args.base, *args.dependencies]:
+            relative = (ROOT / source).resolve().relative_to(ROOT)
+            target = sources / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, target)
+        mlflow.log_artifacts(str(sources), "sources")
         mlflow.log_params({
             "candidate_sha256": resolved["candidate_sha256"], "base_sha256": resolved["base_sha256"],
             "git_sha": resolved["git_sha"], "opponent": opponent, "seed_panel": ",".join(map(str, args.seeds)),
@@ -108,8 +118,8 @@ def main():
                         "action_latency_max_ms": _metric(game, "max_action_ms"), "error_count": len(game["errors"]),
                         "invalid_action_count": sum(v for k, v in game["diagnostics"].items() if k.startswith("noop_")),
                         "override_count": sum(e["type"] == "override" for e in events),
+                        "strategy_decision_count": sum(e["type"] == "strategy_decision" for e in events),
                         "maintenance_rescued": sum(e.get("guard_reason", "").startswith("urgent_") for e in events),
-                        "maintenance_missed": 0, "weed_loss": 0,
                         "plant_loss": game["diagnostics"].get("dead_plants", 0),
                         "animal_loss": game["diagnostics"].get("escaped_animals", 0),
                         "shed_overflow": game["diagnostics"].get("overflow_units", 0),
@@ -128,6 +138,17 @@ def main():
             "mean_coin_margin": statistics.mean(g["coin_margin"] for g in games),
             "errors": sum(bool(g["errors"]) for g in games),
             "max_action_ms": max(g["max_action_ms"] for g in games),
+            "wins": sum(g["win"] for g in games),
+            "draws": sum(g["draw"] for g in games),
+            "losses": sum(not g["win"] and not g["draw"] for g in games),
+            "status_errors": sum(any(s != "DONE" for s in g["status"]) for g in games),
+            "mean_action_ms": statistics.mean(g["mean_action_ms"] for g in games),
+            "opponent_mean_action_ms": statistics.mean(g["opponent_mean_action_ms"] for g in games),
+            "opponent_max_action_ms": max(g["opponent_max_action_ms"] for g in games),
+            "diagnostics": {key: sum(g["diagnostics"].get(key, 0) for g in games)
+                            for key in sorted({key for g in games for key in g["diagnostics"]})},
+            "terminal_inventory": sum(sum(g["final_shed"].values()) + g["final_carried"] for g in games),
+            "run_id": parent.info.run_id,
         }
         _write_json(output / "benchmark.summary.json", summary)
         (output / "report.md").write_text("# Benchmark receipt\n\n" + "\n".join(f"- **{k}**: {v}" for k, v in summary.items()) + "\n")

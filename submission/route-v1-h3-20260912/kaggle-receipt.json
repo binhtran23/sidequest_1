@@ -1,0 +1,11 @@
+{
+  "competition": "kaggriculture",
+  "submission_id": 56182079,
+  "date_submitted": "2026-09-12T08:38:32.600000",
+  "file": "main.py",
+  "sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+  "upload_result": "Successfully submitted to Kaggriculture",
+  "status_at_confirmation": "PENDING",
+  "remaining_daily_submissions_at_confirmation": 4,
+  "description": "Route v1 H3: self-contained three-turn sales; 48/48 holdout wins, exact parity, validated package 09a1568d3aae"
+}

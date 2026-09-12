@@ -24,6 +24,12 @@ def validate_slice(path):
     tree = ast.parse(entrypoint.read_text(), filename=str(entrypoint))
     if not any(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == symbol for node in tree.body):
         raise ValueError(f"missing entrypoint {symbol}: {path.name}")
+    for reference in manifest.get("development", {}).get("variant_entrypoints", []):
+        relative, variant_symbol = reference.split(":", 1)
+        variant_path = path / relative
+        variant_tree = ast.parse(variant_path.read_text(), filename=str(variant_path))
+        if not any(isinstance(node, ast.FunctionDef) and node.name == variant_symbol for node in variant_tree.body):
+            raise ValueError(f"missing variant entrypoint: {reference}")
     return {"source_id": manifest["source_id"], "ok": True, "raw_sha256": manifest["raw_sha256"]}
 
 

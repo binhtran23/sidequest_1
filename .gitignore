@@ -1,11 +1,28 @@
 .DS_Store
 
+# Python and local tooling
 __pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Local credentials and overrides
+.env
+.env.*
+!.env.example
+
+# Raw game evidence and local services
 replays/
 evidence/raw/
+walkthrough/
 .local/mlflow/
 mlruns/
-experiments/*/raw/
-experiments/*/*.jsonl
 benchmark_results.json
-walkthrough/
+
+# Experiment runs are reviewed locally. Publish selected findings in README.md.
+experiments/*/

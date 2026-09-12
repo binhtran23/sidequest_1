@@ -1,0 +1,60 @@
+{
+  "version": "route-v1-h3-20260912",
+  "sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+  "gate": "passed",
+  "parity": {
+    "candidate_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+    "action_parity": 10785,
+    "action_mismatches": 0,
+    "read_only_tapes": true,
+    "isolated_source_loader": "passed",
+    "isolated_scores": [
+      148014.0,
+      3441.0
+    ],
+    "cold_load_ms": 66.79758400059654,
+    "status_errors": 0
+  },
+  "benchmark": {
+    "diagnostics": {
+      "dead_plants": 24,
+      "escaped_animals": 0,
+      "noop_CARE": 258,
+      "noop_COLLECT_FERTILIZER": 52,
+      "noop_DROP": 2,
+      "noop_HARVEST": 82,
+      "noop_PLACE": 4,
+      "noop_WATER": 179,
+      "op_BUILD_COOP": 54,
+      "op_BUILD_PASTURE": 174,
+      "op_CARE": 4974,
+      "op_COLLECT_FERTILIZER": 4494,
+      "op_DIG": 421,
+      "op_DROP": 572,
+      "op_FEED": 4404,
+      "op_FERTILIZE": 772,
+      "op_HARVEST": 5790,
+      "op_PICKUP": 2318,
+      "op_PLACE": 1208,
+      "op_PLANT": 2882,
+      "op_WATER": 13537,
+      "overflow_units": 28
+    },
+    "draws": 0,
+    "errors": 0,
+    "games": 12,
+    "losses": 0,
+    "max_action_ms": 4.659,
+    "mean_action_ms": 0.0405,
+    "mean_coin_margin": 3972.8333333333335,
+    "opponent_max_action_ms": 149.672,
+    "opponent_mean_action_ms": 0.19908333333333333,
+    "points_rate": 1.0,
+    "run_id": "37c8605fb9cc481eab53dd8eb044edb1",
+    "status_errors": 0,
+    "terminal_inventory": 0,
+    "wins": 12
+  },
+  "candidate": "agents/slices/kaggriculture-most-powerful-route/variants/submission_v1/main.py",
+  "previous_root_sha256": "6bab2539cecae032868da8c4d51846a492a23ad2e978ad2532c1cf80c107cc30"
+}

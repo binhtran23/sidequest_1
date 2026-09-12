@@ -24,7 +24,7 @@ To enter the competition, accept the rules and submit through the [Kaggriculture
 ├── experiments/
 │   ├── run_mlflow_benchmark.py     # reproducible benchmark runner
 │   ├── log_extraction.py           # extraction provenance logger
-│   └── <experiment-id>/            # config, report, and registry receipt
+│   └── <experiment-id>/            # local run outputs; Git-ignored
 ├── tools/
 │   ├── validate_slices.py          # static provenance/entrypoint checks
 │   └── init_mlflow.py              # local MLflow experiment setup
@@ -81,7 +81,7 @@ Initialize the explicit local SQLite backend and log extraction provenance:
   --experiment-id refactor-baseline --both-seats
 ```
 
-The benchmark creates one parent run and one nested run per game in `kaggriculture.benchmark`. The parent stores immutable source/base hashes, Git SHA, resolved configuration, opponent, frozen seed panel, and seat policy. Nested runs log game metrics and anomaly events. Static receipts are written to `experiments/<experiment-id>/`; large raw outputs, SQLite metadata, and MLflow artifacts stay ignored locally.
+The benchmark creates one parent run and one nested run per game in `kaggriculture.benchmark`. The parent stores immutable source/base hashes, Git SHA, resolved configuration, opponent, frozen seed panel, and seat policy. Nested runs log game metrics and anomaly events. Reports, receipts, raw outputs, SQLite metadata, and MLflow artifacts stay local for review. Once a result is accepted for publication, summarize it for readers in this README rather than committing the generated experiment payloads.
 
 Open the local UI with:
 
@@ -95,7 +95,7 @@ Open the local UI with:
 
 1. Add or audit a source slice and run `python tools/validate_slices.py`. Extraction is static only; it never executes untrusted notebook code.
 2. Implement a variant under the source slice. The adaptive wrapper may repair only provably invalid/no-op unit actions or urgent same-tile maintenance; it does not alter market orders.
-3. Run the local benchmark and review the committed experiment receipt plus local MLflow telemetry.
+3. Run the local benchmark and review its experiment receipt plus MLflow telemetry locally. Add only approved conclusions to this README.
 4. Require static validation, adaptive parity tests, zero benchmark errors, no runtime regression, and receipt review before promotion. Only then may a self-contained candidate create `submission/<version>/` and replace root `main.py` byte-for-byte.
 
 ## Submission
