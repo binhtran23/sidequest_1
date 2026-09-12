@@ -13,7 +13,9 @@
     "status": "selected_policy_packaged_promoted_and_submitted",
     "evaluation_report": "experiments/route-test-v1-20260912/report.md",
     "evaluation_receipt": "experiments/route-test-v1-20260912/evaluation.json",
-    "selected_test_settings": {"sale_horizon": 3},
+    "selected_test_settings": {
+      "sale_horizon": 3
+    },
     "variant_entrypoints": [
       "variants/submission_v1/main.py:agent",
       "variants/test_v1/main.py:agent",
@@ -25,23 +27,49 @@
       "variants/crop_only/main.py:agent",
       "variants/tomato_only/main.py:agent",
       "variants/tomato_off/main.py:agent",
-      "variants/endgame_only/main.py:agent"
+      "variants/endgame_only/main.py:agent",
+      "variants/sale_granularity_v1/main.py:agent",
+      "variants/shop_plan_probe/main.py:agent"
     ],
     "audit_report": "experiments/champion-losses-20260912/report.md",
     "base_action_replay_matches": 10785,
-    "hypotheses": ["sale_timing", "crop_choice", "feed_reservation", "tomato_profit_gate", "endgame_routes"],
+    "hypotheses": [
+      "sale_timing",
+      "crop_choice",
+      "feed_reservation",
+      "tomato_profit_gate",
+      "endgame_routes"
+    ],
     "additional_source": "agents/slices/astra-current/base/main.py",
     "additional_source_sha256": "6bab2539cecae032868da8c4d51846a492a23ad2e978ad2532c1cf80c107cc30",
     "submission_build": {
       "source": "base/router.py",
       "source_sha256": "3a444a70ea9dd89f3cb857676fcc0180ebf1dfb7ede89f7f0cc82a2ef384e380",
-      "changes": ["inline audited action tapes", "select sale horizon 3", "share read-only tapes instead of redundant deepcopy", "retain sale telemetry and license notices"],
+      "changes": [
+        "inline audited action tapes",
+        "select sale horizon 3",
+        "share read-only tapes instead of redundant deepcopy",
+        "retain sale telemetry and license notices"
+      ],
       "status": "promoted_and_submitted",
       "promotion_receipt": "experiments/route-v1-package-20260912/promotion.json",
       "submission_version": "route-v1-h3-20260912",
       "kaggle_submission_id": 56182079,
       "main_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247"
     },
-    "scope": "Independent development strategy variants; shared adaptive layer and champion base are unchanged"
+    "scope": "Independent development strategy variants; shared adaptive layer and champion base are unchanged",
+    "leader_observation": {
+      "snapshot_id": "top-replays-20260912T115205202783Z",
+      "team_name": "Majkel1337",
+      "team_id": 16718819,
+      "submission_id": 56156662,
+      "leaderboard_score": "3223.2",
+      "captured_at": "2026-09-12",
+      "report": "experiments/leader-route-20260912/report.md",
+      "tape_transplant": "falsified: 0/12 raw, 2/12 routed, vs 12 draws for the champion mirror",
+      "sale_granularity": "falsified: monotone loss to cap; see variants/sale_granularity_v1/README.md",
+      "shop_pair_coverage": "falsified: plan 0 dominates on uncovered openings; see variants/shop_plan_probe/README.md",
+      "confound_note": "Variants wrapping base/router.py must set SALE_HORIZON=3 to match root main.py; the packaging default of 2 costs 3630 coins per game on the screen panel."
+    }
   }
 }
