@@ -23,8 +23,10 @@ Use this repository as an agent-development workspace, not as a direct notebook 
 1. Audit a source and create/update its manifest before editing extracted code. Do not execute untrusted notebook/archive code during extraction.
 2. Validate provenance and entrypoints with `python tools/validate_slices.py`.
 3. Benchmark variants through `experiments/run_mlflow_benchmark.py`. Use the explicit local SQLite/artifact paths supplied by the tooling; never rely on `mlruns`.
-4. Inspect the local static experiment report and MLflow runs. Publish only reviewed conclusions in the root `README.md`. The adaptive layer may only override provably invalid/no-op unit actions, or PASS/invalid actions for urgent same-tile weed, water, or feed maintenance; market orders and the number of hands must remain unchanged.
+4. Inspect the local static experiment report and MLflow runs. Publish only reviewed conclusions in the root `README.md`. The adaptive layer may only override provably invalid/no-op unit actions, or PASS/invalid actions for urgent same-tile weed, water, feed, or fertilizer maintenance; market orders and the number of hands must remain unchanged.
 5. Promote only after the established gate passes, with zero errors, no runtime regression, complete telemetry, and a self-contained candidate. Root `main.py` changes only in that promotion step.
+
+`FERTILIZE` was added to the substitutions in step 4 on 2026-09-12, when `V227` was promoted. The evidence is in `experiments/season-curves-20260912/report.md`: the champion acquires more fertilizer than any top-5 team and applies less than any of them, because it must sell the balance to fund a hiring schedule fixed 719 turns ahead. Withholding that revenue costs 153,202 coins a game, so the only reachable stock is what a unit already carries on a turn the route had left as PASS. Same-tile only, market orders and hand count untouched — the rest of the rule is unchanged.
 
 ## Checks
 

@@ -4,6 +4,34 @@ This repository develops, evaluates, and promotes Kaggriculture competition agen
 
 To enter the competition, accept the rules and submit through the [Kaggriculture competition overview](https://www.kaggle.com/competitions/kaggriculture/overview).
 
+## Current champion
+
+`submission/route-v2-fert18-20260912/` — a tape-driven router that picks one of 13 frozen
+season-long action tapes from the first two shops it observes, then layers weed repair, a
+three-turn sale window, a tomato investment, and terminal liquidation on top. It replaced
+`route-v1-h3-20260912` on 2026-09-12 after winning **46 of 48 holdout games at +203.8
+coins a game**, both seats, zero errors, no runtime regression.
+
+The change it carries is `V227`, and it came out of measuring the top five's replays
+against our own. On the inputs that were supposed to explain the gap, the champion is not
+behind: over days 0–10 it out-earns every top-5 team, buys more land, and reaches day 12
+with tiles and animals matched to the rank-1 agent. It then harvests 541 units over days
+10–20 against that agent's 878.
+
+The one production input that separates them is fertilizer. The champion acquires 343.8
+units a game — more than any of the top five — and applies 67.7, fewer than any of them.
+It cannot simply stop selling the balance: its hiring schedule is budgeted 719 turns in
+advance on that revenue, and withholding it costs 153,202 coins a game. `V227` therefore
+spends only what a unit already carries, on its own tile, on a turn the route had already
+left idle. That is worth 5.54 applications a game and +204 coins — real and repeatable,
+and about 0.4% of a season's score. It does not close the gap to the leaderboard's top,
+and the evidence says nothing reachable from a frozen tape would.
+
+Full write-ups: `experiments/season-curves-20260912/report.md` (the measurement),
+`experiments/fertilizer-use-20260912/` (the A/B and everything falsified alongside it),
+`experiments/leader-route-20260912/report.md` and `experiments/rank-gradient-20260912/`
+(why the leaders' routes cannot be copied at all).
+
 ## Repository layout
 
 ```text
@@ -94,7 +122,7 @@ Open the local UI with:
 ## Development workflow
 
 1. Add or audit a source slice and run `python tools/validate_slices.py`. Extraction is static only; it never executes untrusted notebook code.
-2. Implement a variant under the source slice. The adaptive wrapper may repair only provably invalid/no-op unit actions or urgent same-tile maintenance; it does not alter market orders.
+2. Implement a variant under the source slice. The adaptive wrapper may repair only provably invalid/no-op unit actions or urgent same-tile maintenance — weed, water, feed, or fertilizer; it does not alter market orders or the number of hands.
 3. Run the local benchmark and review its experiment receipt plus MLflow telemetry locally. Add only approved conclusions to this README.
 4. Require static validation, adaptive parity tests, zero benchmark errors, no runtime regression, and receipt review before promotion. Only then may a self-contained candidate create `submission/<version>/` and replace root `main.py` byte-for-byte.
 

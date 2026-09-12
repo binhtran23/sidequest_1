@@ -1,0 +1,43 @@
+{
+  "base": "/Users/binhtran23/Documents/Kaggle Compe/kaggriculture/main.py",
+  "base_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+  "candidate": "/Users/binhtran23/Documents/Kaggle Compe/kaggriculture/agents/slices/kaggriculture-most-powerful-route/variants/submission_v2/main.py",
+  "candidate_sha256": "59c96edd7debf4383c7c3aa12eaaa0b193af368be2add88a71c7183c8b05b007",
+  "configuration": {},
+  "dependency_sha256": {
+    "agents/slices/kaggriculture-most-powerful-route/variants/fertilizer_use_v1/main.py": "38a0e924e165cd92737cd08c7749842997ba5a0e2a3e8bad750b064d422db263",
+    "agents/slices/kaggriculture-most-powerful-route/variants/fertilizer_use_v1/settings.json": "5fd6270ab4f5211e42b37a8745329700b3fc13b5d5a9865ef681993f10a07dd6"
+  },
+  "git_sha": "fea24b2f1418f8974316e3ff040aecbd2325c004",
+  "kaggle_environments": "1.32.7",
+  "mlflow": "3.7.0",
+  "opponent": "/Users/binhtran23/Documents/Kaggle Compe/kaggriculture/main.py",
+  "python": "3.11.15",
+  "seat_policy": "both",
+  "seeds": [
+    61000,
+    61001,
+    61002,
+    61003,
+    61004,
+    61005,
+    61006,
+    61007,
+    61008,
+    61009,
+    61010,
+    61011,
+    61012,
+    61013,
+    61014,
+    61015,
+    61016,
+    61017,
+    61018,
+    61019,
+    61020,
+    61021,
+    61022,
+    61023
+  ]
+}
