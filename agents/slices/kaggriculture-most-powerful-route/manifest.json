@@ -9,12 +9,38 @@
   "extraction_status": "verified_static",
   "static_validation": "passed",
   "development": {
+    "loss_upgrade_v1": {
+      "status": "experimental_submitted_runtime_gate_failed",
+      "promoted": false,
+      "kaggle_submission_id": 56199076,
+      "kaggle_receipt": "variants/loss_upgrade_v1/kaggle-receipt.json",
+      "validation_revision": "r7",
+      "validation_receipt": "experiments/loss-upgrade-validation-20260912/evaluation.json",
+      "validation_gates": {"positive_champion_improvement": true, "no_aggregate_opponent_regression": true, "no_mean_runtime_regression": false, "zero_errors_complete_telemetry": true},
+      "holdout_games_reviewed": 288,
+      "candidate_sha256": "4d2982e4169017ea8c3f375fc035b597a394839fffbef4f1a8353d05f0e9aee3",
+      "frozen_policy_sha256": "2ed04548c1a6985c87cc4a88172d103995b4566d7564092743a633a72c539c82",
+      "post_freeze_runtime_optimization": {"change": "Reuse the current sale projection and skip impossible fourth-turn sales before scanning opponent tiles", "strategy_changed": false, "action_and_telemetry_parity": 10785},
+      "selected_settings": {"fertilizer": "window", "sale_horizon": 4, "sale_pressure": true, "late_harvest": false},
+      "holdout_seeds": {"first": 921700, "last": 921723, "both_seats": true, "prior_experiment_collisions": 0},
+      "validation_report": "experiments/loss-upgrade-validation-20260912/report.md",
+      "champion_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+      "evidence_manifest": "experiments/loss-upgrade-top5-20260912/manifest.json",
+      "fertilizer_control_recovery": {
+        "mlflow_run_id": "0f5dbee5355247e28a98c73f891c0984",
+        "main_sha256": "38a0e924e165cd92737cd08c7749842997ba5a0e2a3e8bad750b064d422db263",
+        "audit": "Read archived Python source and settings statically; restore verbatim from local MLflow source artifacts."
+      },
+      "scope": "Independent strategy variant; no champion promotion or shared adaptive changes."
+    },
     "test_version": "variants/test_v1/main.py:agent",
     "status": "selected_policy_packaged_promoted_and_submitted",
     "evaluation_report": "experiments/route-test-v1-20260912/report.md",
     "evaluation_receipt": "experiments/route-test-v1-20260912/evaluation.json",
     "selected_test_settings": {"sale_horizon": 3},
     "variant_entrypoints": [
+      "variants/fertilizer_use_v1/main.py:agent",
+      "variants/loss_upgrade_v1/main.py:agent",
       "variants/submission_v1/main.py:agent",
       "variants/test_v1/main.py:agent",
       "variants/control/main.py:agent",

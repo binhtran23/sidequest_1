@@ -65,6 +65,7 @@ def main():
     parser.add_argument("--both-seats", action="store_true")
     parser.add_argument("--config", default="{}")
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--parameters", default="{}", help="Candidate module overrides; recorded in the receipt")
     parser.add_argument("--dependencies", nargs="*", default=[], help="Additional source/config files to fingerprint")
     args = parser.parse_args()
 
@@ -81,11 +82,15 @@ def main():
     candidate, base = ROOT / args.candidate, ROOT / args.base
     opponent = str((ROOT / args.opponent) if args.opponent.endswith(".py") else args.opponent)
     config = json.loads(args.config)
+    parameters = json.loads(args.parameters)
+    if not isinstance(parameters, dict):
+        parser.error("--parameters must be a JSON object")
     resolved = {
         "candidate": str(candidate), "candidate_sha256": _sha256(candidate),
         "base": str(base), "base_sha256": _sha256(base), "opponent": opponent,
         "seeds": args.seeds, "seat_policy": "both" if args.both_seats else "seat_0",
         "configuration": config, "git_sha": _git_sha(),
+        "candidate_parameters": parameters,
         "python": platform.python_version(), "mlflow": importlib.metadata.version("mlflow"),
         "kaggle_environments": importlib.metadata.version("kaggle-environments"),
         "dependency_sha256": {p: _sha256(ROOT / p) for p in sorted(args.dependencies)},
@@ -104,11 +109,12 @@ def main():
             "candidate_sha256": resolved["candidate_sha256"], "base_sha256": resolved["base_sha256"],
             "git_sha": resolved["git_sha"], "opponent": opponent, "seed_panel": ",".join(map(str, args.seeds)),
             "seat_policy": resolved["seat_policy"], "configuration": json.dumps(config, sort_keys=True),
+            "candidate_parameters": json.dumps(parameters, sort_keys=True),
         })
         for seed in args.seeds:
             for seat in (0, 1) if args.both_seats else (0,):
                 with mlflow.start_run(run_name=f"seed-{seed}-seat-{seat}", nested=True):
-                    game = run_game(str(candidate), opponent, seed, seat, config, diagnostics=True)
+                    game = run_game(str(candidate), opponent, seed, seat, config, diagnostics=True, parameters=parameters)
                     games.append(game)
                     events = game.pop("telemetry_events", [])
                     metrics = {

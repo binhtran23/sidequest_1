@@ -24,5 +24,13 @@ walkthrough/
 mlruns/
 benchmark_results.json
 
-# Experiment runs are reviewed locally. Publish selected findings in README.md.
+# Detailed development documentation stays local until the competition is closed
+# and the final submission is complete. Keep runtime settings and source manifests.
+.local/notes/
+agents/slices/*/notes.md
+agents/slices/*/variants/**/*.md
+agents/slices/*/variants/**/kaggle-receipt.json
+experiments/README.md
+
+# Experiment runs are reviewed locally. Root README contains only a general overview.
 experiments/*/
