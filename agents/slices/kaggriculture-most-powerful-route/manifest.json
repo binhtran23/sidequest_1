@@ -37,7 +37,9 @@
     "status": "selected_policy_packaged_promoted_and_submitted",
     "evaluation_report": "experiments/route-test-v1-20260912/report.md",
     "evaluation_receipt": "experiments/route-test-v1-20260912/evaluation.json",
-    "selected_test_settings": {"sale_horizon": 3},
+    "selected_test_settings": {
+      "sale_horizon": 3
+    },
     "variant_entrypoints": [
       "variants/fertilizer_use_v1/main.py:agent",
       "variants/loss_upgrade_v1/main.py:agent",
@@ -51,23 +53,98 @@
       "variants/crop_only/main.py:agent",
       "variants/tomato_only/main.py:agent",
       "variants/tomato_off/main.py:agent",
-      "variants/endgame_only/main.py:agent"
+      "variants/endgame_only/main.py:agent",
+      "variants/sale_granularity_v1/main.py:agent",
+      "variants/shop_plan_probe/main.py:agent",
+      "variants/fertilizer_use_v1/main.py:agent",
+      "variants/submission_v2/main.py:agent"
     ],
     "audit_report": "experiments/champion-losses-20260912/report.md",
     "base_action_replay_matches": 10785,
-    "hypotheses": ["sale_timing", "crop_choice", "feed_reservation", "tomato_profit_gate", "endgame_routes"],
+    "hypotheses": [
+      "sale_timing",
+      "crop_choice",
+      "feed_reservation",
+      "tomato_profit_gate",
+      "endgame_routes"
+    ],
     "additional_source": "agents/slices/astra-current/base/main.py",
     "additional_source_sha256": "6bab2539cecae032868da8c4d51846a492a23ad2e978ad2532c1cf80c107cc30",
     "submission_build": {
+      "source": "main.py (route-v1-h3-20260912) + V227",
+      "source_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247",
+      "changes": [
+        "V227: apply carried fertilizer on PASS turns, own tile only, from day 18"
+      ],
+      "status": "promoted",
+      "promotion_receipt": "experiments/fertilizer-v227-holdout-20260912/promotion.json",
+      "submission_version": "route-v2-fert18-20260912",
+      "main_sha256": "59c96edd7debf4383c7c3aa12eaaa0b193af368be2add88a71c7183c8b05b007",
+      "gate": {
+        "holdout": "46-0-2 over 48 games vs route-v1-h3-20260912, both seats, +203.8 coins/game",
+        "action_parity": "5752/5752 callbacks identical to variants/fertilizer_use_v1",
+        "mirror": "12 draws at margin 0",
+        "errors": 0,
+        "status_errors": 0,
+        "mean_action_ms": 0.0386,
+        "opponent_mean_action_ms": 0.0401,
+        "mlflow_run_id": "0f5dbee5355247e28a98c73f891c0984",
+        "mlflow_children": 48
+      },
+      "agents_md_change": "FERTILIZE added to the same-tile substitutions allowed in step 4; market orders and hand count still unchanged"
+    },
+    "scope": "Independent development strategy variants; shared adaptive layer and champion base are unchanged",
+    "leader_observation": {
+      "snapshot_id": "top-replays-20260912T115205202783Z",
+      "team_name": "Majkel1337",
+      "team_id": 16718819,
+      "submission_id": 56156662,
+      "leaderboard_score": "3223.2",
+      "captured_at": "2026-09-12",
+      "report": "experiments/leader-route-20260912/report.md",
+      "tape_transplant": "falsified: 0/12 raw, 2/12 routed, vs 12 draws for the champion mirror",
+      "sale_granularity": "falsified: monotone loss to cap; see variants/sale_granularity_v1/README.md",
+      "shop_pair_coverage": "falsified: plan 0 dominates on uncovered openings; see variants/shop_plan_probe/README.md",
+      "confound_note": "Variants wrapping base/router.py must set SALE_HORIZON=3 to match root main.py; the packaging default of 2 costs 3630 coins per game on the screen panel."
+    },
+    "fertilizer_observation": {
+      "report": "experiments/fertilizer-use-20260912/report.md",
+      "season_curves": "experiments/season-curves-20260912/",
+      "snapshot_id": "top-replays-20260912T130214269217Z",
+      "finding": "champion acquires 343.8 fertilizer units a game, more than any top-5 team (287.2-332.2), and applies 67.7, fewer than any of them (113.7-199.0); 304.5 units a game are sold instead",
+      "confirmed": {
+        "variant": "variants/fertilizer_use_v1/main.py:agent",
+        "settings": {
+          "apply_on_pass": true,
+          "start_day": 18
+        },
+        "holdout": "46-0-2 over 48 games vs root main.py, both seats, +203.8 coins/game",
+        "screen": "12-0-0 over 12 games, +217 coins/game",
+        "control": "48 draws at margin 0; provable no-op",
+        "effect_size": "5.54 FERTILIZE actions a game, about 37 coins each; 0.4% of score",
+        "promoted_as": "route-v2-fert18-20260912"
+      },
+      "falsified": {
+        "fertilizer_reserve": "withholding sales starves a budgeted HIRE; 288 hand desyncs and 2,052 truncated hand actions a game, -153,202 coins",
+        "pickup_units": "walking to the shed costs more than it returns; -591 to -1,828 coins",
+        "early_application": "days 0-5 lose games outright (8-0-4); days 6-9 cost 82 coins"
+      },
+      "promotion_note": "FERTILIZE is outside the weed/water/feed substitutions AGENTS.md allows the adaptive layer; promoting needs that constraint widened deliberately"
+    },
+    "previous_submission_build": {
       "source": "base/router.py",
       "source_sha256": "3a444a70ea9dd89f3cb857676fcc0180ebf1dfb7ede89f7f0cc82a2ef384e380",
-      "changes": ["inline audited action tapes", "select sale horizon 3", "share read-only tapes instead of redundant deepcopy", "retain sale telemetry and license notices"],
+      "changes": [
+        "inline audited action tapes",
+        "select sale horizon 3",
+        "share read-only tapes instead of redundant deepcopy",
+        "retain sale telemetry and license notices"
+      ],
       "status": "promoted_and_submitted",
       "promotion_receipt": "experiments/route-v1-package-20260912/promotion.json",
       "submission_version": "route-v1-h3-20260912",
       "kaggle_submission_id": 56182079,
       "main_sha256": "09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247"
-    },
-    "scope": "Independent development strategy variants; shared adaptive layer and champion base are unchanged"
+    }
   }
 }

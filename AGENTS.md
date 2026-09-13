@@ -23,7 +23,7 @@ Use this repository as an agent-development workspace, not as a direct notebook 
 1. Audit a source and create/update its manifest before editing extracted code. Do not execute untrusted notebook/archive code during extraction.
 2. Validate provenance and entrypoints with `python tools/validate_slices.py`.
 3. Benchmark variants through `experiments/run_mlflow_benchmark.py`. Use the explicit local SQLite/artifact paths supplied by the tooling; never rely on `mlruns`.
-4. Inspect the local static experiment report and MLflow runs. Keep detailed conclusions local under the publication policy below. The adaptive layer may only override provably invalid/no-op unit actions, or PASS/invalid actions for urgent same-tile weed, water, or feed maintenance; market orders and the number of hands must remain unchanged.
+4. Inspect the local static experiment report and MLflow runs. Keep detailed conclusions local under the publication policy below. The adaptive layer may only override provably invalid/no-op unit actions, or PASS/invalid actions for urgent same-tile weed, water, feed, or fertilizer maintenance; market orders and the number of hands must remain unchanged.
 5. Promote only after the established gate passes, with zero errors, no runtime regression, complete telemetry, and a self-contained candidate. Root `main.py` changes only in that promotion step.
 
 ## Publication policy
