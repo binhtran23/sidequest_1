@@ -189,19 +189,36 @@ class LossUpgradeTests(unittest.TestCase):
         p.reserve_sales(action,p.FarmView(obs),state,tape,358)
         self.assertEqual(action['market'],[])
 
-    def test_disabled_candidate_matches_champion_trajectory(self):
+    def assert_disabled_matches_base(self, candidate, base):
+        """With its settings cleared, a candidate must replay its own base exactly.
+
+        The base is per-candidate, not root: `loss_upgrade_v1` was composed onto
+        route-v1-h3 and so does not carry V227, which route-v2-fert18 added.
+        Comparing it against today's root tests the promotion history, not parity.
+        """
         files = sorted((ROOT/'evidence/raw/champion-losses-20260912').glob('*.json'))
         if not files:
             self.skipTest('Optional local replay evidence absent')
         import json
         replay = json.loads(files[0].read_text())
-        p,champion = load(CANDIDATE),load(ROOT/'main.py')
+        p, reference = load(candidate), load(base)
         p._LOSS_SETTINGS = {}
         seat = replay['info']['TeamNames'].index('Bình Trần Thanh')
-        for t,states in enumerate(replay['steps'][:-1]):
+        for t, states in enumerate(replay['steps'][:-1]):
             obs = copy.deepcopy(states[seat]['observation'])
-            obs['step'],obs['player'] = t,seat
-            self.assertEqual(p.agent(copy.deepcopy(obs)),champion.agent(copy.deepcopy(obs)),t)
+            obs['step'], obs['player'] = t, seat
+            self.assertEqual(p.agent(copy.deepcopy(obs)), reference.agent(copy.deepcopy(obs)), t)
+
+    def test_disabled_candidate_matches_its_route_v1_base(self):
+        self.assert_disabled_matches_base(
+            CANDIDATE, ROOT/'submission/route-v1-h3-20260912/main.py')
+
+    def test_disabled_v3_matches_the_current_champion(self):
+        candidate = (ROOT/'agents/slices/kaggriculture-most-powerful-route'
+                     '/variants/sale_fert_v3/main.py')
+        if not candidate.exists():
+            self.skipTest('sale_fert_v3 has not been built')
+        self.assert_disabled_matches_base(candidate, ROOT/'main.py')
 
 
 if __name__ == '__main__':

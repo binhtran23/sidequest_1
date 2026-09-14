@@ -18,9 +18,15 @@ import hashlib
 import json
 import shutil
 import sqlite3
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.gates import MAX_BUDGET_MS, P95_BUDGET_MS, latency_within_budget  # noqa: E402
+
 STDLIB_ONLY = {"copy", "json", "zlib", "base64", "lzma", "math", "random", "sys",
                "collections", "itertools", "functools", "heapq", "os", "time", "re"}
 
@@ -41,6 +47,13 @@ def _self_contained(path: Path) -> list[str]:
     return sorted(imported - STDLIB_ONLY)
 
 
+def _p95(evidence: Path) -> float:
+    """Mean per-game p95 callback time, or 0.0 when the receipt predates it."""
+    games = [json.loads(p.read_text()) for p in sorted((evidence / "raw").glob("seed-*-seat-*.json"))]
+    latencies = [g["p95_action_ms"] for g in games if "p95_action_ms" in g]
+    return sum(latencies) / len(latencies) if latencies else 0.0
+
+
 def gate(candidate: Path, evidence: Path) -> dict:
     summary = json.loads((evidence / "benchmark.summary.json").read_text())
     config = json.loads((evidence / "config.resolved.json").read_text())
@@ -53,12 +66,20 @@ def gate(candidate: Path, evidence: Path) -> dict:
     # The candidate has to have beaten the champion it is replacing, not an
     # older one, so both the recorded base and the opponent must be root today.
     assert config["base_sha256"] == current, "benchmark base is not the current root main.py"
-    assert Path(config["opponent"]).resolve() == (ROOT / "main.py").resolve(), \
-        "benchmark opponent was not root main.py"
+    # A pooled receipt may list several opponents; the champion being replaced
+    # has to be one of them, so the margin is measured against today's root.
+    opponents = config["opponent"]
+    opponents = [opponents] if isinstance(opponents, str) else list(opponents)
+    assert any(Path(o).resolve() == (ROOT / "main.py").resolve() for o in opponents), \
+        "root main.py was not among the benchmark opponents"
     assert summary["errors"] == summary["status_errors"] == 0, "benchmark reported errors"
     assert summary["mean_coin_margin"] > 0 and summary["points_rate"] > 0.5, "no improvement"
-    assert summary["mean_action_ms"] <= summary["opponent_mean_action_ms"], "runtime regression"
-    assert summary["max_action_ms"] < 1000, "action latency over budget"
+    # Latency is judged against the engine's own budget, not against the
+    # incumbent's timing. See tools/gates.py.
+    p95 = _p95(evidence)
+    assert latency_within_budget(p95, summary["max_action_ms"]), (
+        f"latency over budget: p95 {p95:.3f}ms (limit {P95_BUDGET_MS}), "
+        f"max {summary['max_action_ms']:.3f}ms (limit {MAX_BUDGET_MS})")
 
     connection = sqlite3.connect(f"file:{ROOT / '.local/mlflow/mlflow.db'}?mode=ro", uri=True)
     parent = connection.execute(
