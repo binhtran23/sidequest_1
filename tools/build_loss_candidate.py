@@ -1,4 +1,11 @@
-"""Print an apply_patch payload for a self-contained, unpromoted candidate."""
+"""Print an apply_patch payload for a self-contained, unpromoted candidate.
+
+The strategy layer is appended to a checksum-pinned base, so the candidate is
+reproducible from its two inputs. The base is a parameter because the champion
+moves: `loss_upgrade_v1` was composed onto route-v1-h3 and therefore never
+carried V227, which route-v2-fert18 added. Pass `--base main.py` to compose the
+same layer onto the current champion instead.
+"""
 import argparse
 import ast
 import hashlib
@@ -8,13 +15,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER = ROOT / 'agents/slices/kaggriculture-most-powerful-route/variants/loss_upgrade_v1'
 CHAMPION_SHA = '09a1568d3aae9ecd4d0297aa4ffae6e65e2e4e4f0ab448faf63674574f881247'
+DEFAULT_BASE = 'submission/route-v1-h3-20260912/main.py'
 
 
-def source():
-    frozen = ROOT / 'submission/route-v1-h3-20260912/main.py'
-    if hashlib.sha256(frozen.read_bytes()).hexdigest() != CHAMPION_SHA:
-        raise ValueError('Frozen champion checksum mismatch')
-    code = frozen.read_text() + '\n' + (FOLDER/'strategy.py').read_text()
+def source(base=DEFAULT_BASE, base_sha=CHAMPION_SHA, folder=FOLDER):
+    frozen = ROOT / base
+    if base_sha and hashlib.sha256(frozen.read_bytes()).hexdigest() != base_sha:
+        raise ValueError(f'Base checksum mismatch for {base}')
+    code = frozen.read_text() + '\n' + (folder/'strategy.py').read_text()
     # Audited tapes contain only primitive argument lists. Copy those lists
     # directly to preserve isolation without deepcopy's recursive dispatch.
     tapes_path = ROOT/'agents/slices/kaggriculture-most-powerful-route/base/actions.json'
@@ -53,15 +61,33 @@ def source():
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--write', action='store_true',
+                        help='write the composed candidate instead of printing a patch')
+    parser.add_argument('--base', default=DEFAULT_BASE)
+    parser.add_argument('--base-sha', default=None,
+                        help='expected base checksum; defaults to the pinned route-v1 hash')
+    parser.add_argument('--variant', default=None,
+                        help='variant folder name holding strategy.py; defaults to loss_upgrade_v1')
     args = parser.parse_args()
-    target = FOLDER/'main.py'
-    code = source()
+    folder = FOLDER if args.variant is None else FOLDER.parent / args.variant
+    base_sha = args.base_sha
+    if base_sha is None:
+        base_sha = CHAMPION_SHA if args.base == DEFAULT_BASE else \
+            hashlib.sha256((ROOT / args.base).read_bytes()).hexdigest()
+    target = folder/'main.py'
+    code = source(args.base, base_sha, folder)
     if args.check:
         if not target.exists() or target.read_text() != code:
             raise ValueError('Candidate does not match reproducible source')
         print(hashlib.sha256(code.encode()).hexdigest())
+        return
+    if args.write:
+        target.write_text(code)
+        print(json.dumps({'candidate': str(target.relative_to(ROOT)), 'base': args.base,
+                          'base_sha256': base_sha,
+                          'sha256': hashlib.sha256(code.encode()).hexdigest()}, indent=2))
         return
     print('*** Begin Patch')
     if target.exists():
